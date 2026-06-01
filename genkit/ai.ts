@@ -13,6 +13,6 @@ export const ai = genkit({
 
 // Helper to select the configured models
 export const MODELS = {
-  text: process.env.AI_TEXT_MODEL || "gemini-3.5-flash",
-  reasoning: process.env.AI_REASONING_MODEL || "gemini-3.5-flash",
+  text: process.env.AI_TEXT_MODEL || "googleai/gemini-3.5-flash",
+  reasoning: process.env.AI_REASONING_MODEL || "googleai/gemini-3.5-flash",
 };
