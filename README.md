@@ -1,3 +1,16 @@
+<p align="center">
+  <img src="public/images/firesaas-logo-wide-1024.png" alt="FireSaaS Logo" width="480" />
+</p>
+
+<p align="center">
+  <a href="https://nextjs.org"><img src="https://img.shields.io/badge/Next.js-16.x-black?style=flat-square&logo=next.js" alt="Next.js App Router" /></a>
+  <a href="https://firebase.google.com"><img src="https://img.shields.io/badge/Firebase-Suite-FFCA28?style=flat-square&logo=firebase" alt="Firebase Suite" /></a>
+  <a href="https://firebase.google.com/docs/genkit"><img src="https://img.shields.io/badge/Genkit-AI_Orchestration-orange?style=flat-square&logo=firebase" alt="Firebase Genkit" /></a>
+  <a href="https://tailwindcss.com"><img src="https://img.shields.io/badge/Tailwind_CSS-v4.0-06B6D4?style=flat-square&logo=tailwindcss" alt="Tailwind CSS v4" /></a>
+  <a href="https://typescriptlang.org"><img src="https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat-square&logo=typescript" alt="TypeScript" /></a>
+  <a href="https://vitest.dev"><img src="https://img.shields.io/badge/Tests-Vitest%20%7C%20Playwright-green?style=flat-square" alt="Tests status" /></a>
+</p>
+
 # FireSaaS Starter Kit
 
 > Build AI-powered, multi-tenant SaaS products faster with Next.js App Router, Firebase Suite, and Genkit.
