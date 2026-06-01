@@ -10,9 +10,9 @@ importers:
       "@genkit-ai/ai":
         specifier: ^1.36.0
         version: 1.36.0(@google-cloud/firestore@7.11.6)(firebase-admin@13.10.0)(firebase@12.13.0)(genkit@1.36.0(@google-cloud/firestore@7.11.6)(firebase-admin@13.10.0)(firebase@12.13.0))
-      "@genkit-ai/googleai":
-        specifier: ^1.28.0
-        version: 1.28.0(genkit@1.36.0(@google-cloud/firestore@7.11.6)(firebase-admin@13.10.0)(firebase@12.13.0))
+      "@genkit-ai/google-genai":
+        specifier: ^1.36.0
+        version: 1.36.0(genkit@1.36.0(@google-cloud/firestore@7.11.6)(firebase-admin@13.10.0)(firebase@12.13.0))
       "@hookform/resolvers":
         specifier: ^5.4.0
         version: 5.4.0(react-hook-form@7.76.1(react@19.2.4))
@@ -906,14 +906,13 @@ packages:
     peerDependencies:
       genkit: ^1.36.0
 
-  "@genkit-ai/googleai@1.28.0":
+  "@genkit-ai/google-genai@1.36.0":
     resolution:
       {
-        integrity: sha512-K39g1UbuZbaQaX0CyJbLW5nLKxv8HkghyQqezy4EtDK92SqoCEXK4DQKtEi+9JLRa9MHutaBxX9+fSHu7KPE1A==,
+        integrity: sha512-XdWCdKDk/UljnGCljb70ER3+U3/hDoVdIsERMOkc3gR/WmG1w6I3OpUkyE7LIfxcbQzWwRKtpsp8U0x8W2xZYg==,
       }
-    deprecated: "Use @genkit-ai/google-genai package instead. See: https://genkit.dev/docs/js/integrations/google-genai/"
     peerDependencies:
-      genkit: ^1.28.0
+      genkit: ^1.36.0
 
   "@google-cloud/common@5.0.2":
     resolution:
@@ -1019,13 +1018,6 @@ packages:
         integrity: sha512-n2FjE7NAOYyshogdc7KQOl/VZb4sneqPjWouSyia9CMDdMhRX5+RIbqalNmC7LOLzuLAN89VlF2HvG8na9G+zQ==,
       }
     engines: { node: ">=14" }
-
-  "@google/generative-ai@0.24.1":
-    resolution:
-      {
-        integrity: sha512-MqO+MLfM6kjxcKoy0p1wRzG3b4ZZXtPI+z2IE26UogS2Cm/XHO+7gGRBh6gcJsOiIVoH93UwKvW4HdgiOZCy9Q==,
-      }
-    engines: { node: ">=18.0.0" }
 
   "@grpc/grpc-js@1.14.4":
     resolution:
@@ -1371,6 +1363,24 @@ packages:
       {
         integrity: sha512-iUKgm52T8HOE/makSxjqoWhe95ZJA1/G1sYsGev2JDKUSS14KAgg1LHb+Ba+IPow0xflbnSkOsZcO08C7w1gYw==,
       }
+
+  "@jsep-plugin/assignment@1.3.0":
+    resolution:
+      {
+        integrity: sha512-VVgV+CXrhbMI3aSusQyclHkenWSAm95WaiKrMxRFam3JSUiIaQjoMIw2sEs/OX4XifnqeQUN4DYbJjlA8EfktQ==,
+      }
+    engines: { node: ">= 10.16.0" }
+    peerDependencies:
+      jsep: ^0.4.0||^1.0.0
+
+  "@jsep-plugin/regex@1.0.4":
+    resolution:
+      {
+        integrity: sha512-q7qL4Mgjs1vByCaTnDFcBnV9HS7GVPJX5vyVoCgZHNSC9rjwIlmbXG5sUuorR5ndfHAIlJ8pVStxvjXHbNvtUg==,
+      }
+    engines: { node: ">= 10.16.0" }
+    peerDependencies:
+      jsep: ^0.4.0||^1.0.0
 
   "@napi-rs/wasm-runtime@1.1.4":
     resolution:
@@ -5858,6 +5868,13 @@ packages:
       canvas:
         optional: true
 
+  jsep@1.4.0:
+    resolution:
+      {
+        integrity: sha512-B7qPcEVE3NVkmSJbaYxvv4cHkVW7DQsZz13pUMrfS8z8Q/BuShN+gcTXrUlPiGqM2/t/EEaI030bpxMqY8gMlw==,
+      }
+    engines: { node: ">= 10.16.0" }
+
   jsesc@3.1.0:
     resolution:
       {
@@ -5915,6 +5932,14 @@ packages:
         integrity: sha512-XmOWe7eyHYH14cLdVPoyg+GOH3rYX++KpzrylJwSW98t3Nk+U8XOl8FWKOgwtzdb8lXGf6zYwDUzeHMWfxasyg==,
       }
     engines: { node: ">=6" }
+    hasBin: true
+
+  jsonpath-plus@10.4.0:
+    resolution:
+      {
+        integrity: sha512-T92WWatJXmhBbKsgH/0hl+jxjdXrifi5IKeMY02DWggRxX0UElcbVzPlmgLTbvsPeW1PasQ6xE2Q75stkhGbsA==,
+      }
+    engines: { node: ">=18.0.0" }
     hasBin: true
 
   jsonwebtoken@9.0.3:
@@ -8931,12 +8956,11 @@ snapshots:
       - supports-color
     optional: true
 
-  "@genkit-ai/googleai@1.28.0(genkit@1.36.0(@google-cloud/firestore@7.11.6)(firebase-admin@13.10.0)(firebase@12.13.0))":
+  "@genkit-ai/google-genai@1.36.0(genkit@1.36.0(@google-cloud/firestore@7.11.6)(firebase-admin@13.10.0)(firebase@12.13.0))":
     dependencies:
-      "@google/generative-ai": 0.24.1
       genkit: 1.36.0(@google-cloud/firestore@7.11.6)(firebase-admin@13.10.0)(firebase@12.13.0)
       google-auth-library: 9.15.1
-      node-fetch: 3.3.2
+      jsonpath-plus: 10.4.0
     transitivePeerDependencies:
       - encoding
       - supports-color
@@ -9087,8 +9111,6 @@ snapshots:
       - encoding
       - supports-color
     optional: true
-
-  "@google/generative-ai@0.24.1": {}
 
   "@grpc/grpc-js@1.14.4":
     dependencies:
@@ -9262,6 +9284,14 @@ snapshots:
       "@jridgewell/sourcemap-codec": 1.5.5
 
   "@js-sdsl/ordered-map@4.4.2": {}
+
+  "@jsep-plugin/assignment@1.3.0(jsep@1.4.0)":
+    dependencies:
+      jsep: 1.4.0
+
+  "@jsep-plugin/regex@1.0.4(jsep@1.4.0)":
+    dependencies:
+      jsep: 1.4.0
 
   "@napi-rs/wasm-runtime@1.1.4(@emnapi/core@1.10.0)(@emnapi/runtime@1.10.0)":
     dependencies:
@@ -12553,6 +12583,8 @@ snapshots:
     transitivePeerDependencies:
       - "@noble/hashes"
 
+  jsep@1.4.0: {}
+
   jsesc@3.1.0: {}
 
   json-bigint@1.0.0:
@@ -12574,6 +12606,12 @@ snapshots:
       minimist: 1.2.8
 
   json5@2.2.3: {}
+
+  jsonpath-plus@10.4.0:
+    dependencies:
+      "@jsep-plugin/assignment": 1.3.0(jsep@1.4.0)
+      "@jsep-plugin/regex": 1.0.4(jsep@1.4.0)
+      jsep: 1.4.0
 
   jsonwebtoken@9.0.3:
     dependencies:

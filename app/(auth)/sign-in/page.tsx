@@ -47,6 +47,14 @@ function SignInForm() {
         values.password,
       );
 
+      // Sync session cookie to server explicitly first to allow syncUserProfile requireAuth to pass
+      const token = await userCredential.user.getIdToken();
+      await fetch("/api/auth/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      });
+
       // Sync user profile to Firestore
       await syncUserProfile({
         uid: userCredential.user.uid,
@@ -77,6 +85,14 @@ function SignInForm() {
       // Get currently logged-in user from SDK client
       const currentUser = auth.currentUser;
       if (currentUser) {
+        // Sync session cookie to server explicitly first
+        const token = await currentUser.getIdToken();
+        await fetch("/api/auth/session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token }),
+        });
+
         await syncUserProfile({
           uid: currentUser.uid,
           email: currentUser.email!,

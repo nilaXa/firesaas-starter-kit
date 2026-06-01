@@ -63,11 +63,8 @@ service cloud.firestore {
         // Members can list other members
         allow read: if isOrgMember(orgId);
         
-        // Members can be added:
-        // 1. By owners/admins of the organization
-        // 2. Or if creating the first owner member (during org creation, where ownerId matches userId)
-        allow create: if (isAuthenticated() && request.resource.data.userId == request.auth.uid && request.resource.data.role == 'owner') ||
-                       hasRole(orgId, ['owner', 'admin']);
+        // Members can be added: only owners and admins
+        allow create: if hasRole(orgId, ['owner', 'admin']);
                        
         // Updates: only owners and admins. Normal members cannot change roles.
         // A user cannot change their own role to bypass permissions.

@@ -18,7 +18,7 @@
   },
   "dependencies": {
     "@genkit-ai/ai": "^1.36.0",
-    "@genkit-ai/googleai": "^1.28.0",
+    "@genkit-ai/google-genai": "^1.36.0",
     "@hookform/resolvers": "^5.4.0",
     "@radix-ui/react-avatar": "^1.1.11",
     "@radix-ui/react-dialog": "^1.1.15",

@@ -21,8 +21,11 @@ export async function proxy(request: NextRequest) {
   );
   const isAuthRoute = authRoutes.some((route) => pathname.startsWith(route));
 
+  // Skip redirecting Server Action requests
+  const isServerAction = request.headers.has("next-action");
+
   // If path is protected and no session is found, redirect to sign-in
-  if (isProtectedRoute && !session) {
+  if (isProtectedRoute && !session && !isServerAction) {
     const url = new URL("/sign-in", request.url);
     // Keep target path in redirect search param so we can route user back
     url.searchParams.set("redirect", pathname);
@@ -30,7 +33,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // If user is already signed in and tries to access login/register, send to dashboard
-  if (isAuthRoute && session) {
+  if (isAuthRoute && session && !isServerAction) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 

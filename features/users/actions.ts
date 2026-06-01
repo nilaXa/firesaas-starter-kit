@@ -15,6 +15,10 @@ export async function syncUserProfile(payload: {
   displayName?: string | null;
   photoURL?: string | null;
 }) {
+  const claims = await requireAuth();
+  if (claims.uid !== payload.uid) {
+    throw new Error("Unauthorized. Cannot sync profile for another user.");
+  }
   const { uid, email, displayName = null, photoURL = null } = payload;
 
   const userRef = adminDb.doc(FirestorePaths.user(uid));
@@ -47,11 +51,11 @@ export async function syncUserProfile(payload: {
     });
 
     console.log(`Created new Firestore profile for: ${email}`);
-    return { created: true, profile: defaultProfile };
+    return { success: true, created: true };
   } else {
     // If it already exists, update updatedAt to show recent login activity
     await userRef.update({ updatedAt: now });
-    return { created: false, profile: userSnap.data() };
+    return { success: true, created: false };
   }
 }
 

@@ -22,29 +22,50 @@ async function getMemberRole(
   return docSnap.exists ? docSnap.data()?.role : null;
 }
 
-// In-memory sliding window rate limiter
-// Key: userId, Value: array of request timestamps (ms)
-const rateLimitMap = new Map<string, number[]>();
+// AI Rate Limiter limits users to 5 requests per minute
 const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
-const MAX_AI_FLOWS_PER_MINUTE = 5; // Allow max 5 AI requests per minute per user
+const MAX_AI_FLOWS_PER_MINUTE = 5;
 
-function isRateLimited(userId: string): boolean {
-  const now = Date.now();
-  const requestTimestamps = rateLimitMap.get(userId) || [];
+/**
+ * Transaction-backed Firestore rate limiter to prevent bypass across server instances.
+ */
+async function checkRateLimitFirestore(userId: string): Promise<boolean> {
+  const privateRef = adminDb.doc(FirestorePaths.privateUser(userId));
 
-  // Filter out timestamps older than the 1-minute window
-  const activeTimestamps = requestTimestamps.filter(
-    (timestamp) => now - timestamp < RATE_LIMIT_WINDOW_MS,
-  );
+  return await adminDb.runTransaction(async (transaction) => {
+    const snap = await transaction.get(privateRef);
+    const now = Date.now();
 
-  if (activeTimestamps.length >= MAX_AI_FLOWS_PER_MINUTE) {
-    return true;
-  }
+    let timestamps: number[] = [];
+    if (snap.exists) {
+      timestamps = snap.data()?.aiRequestTimestamps || [];
+    }
 
-  // Record current request timestamp
-  activeTimestamps.push(now);
-  rateLimitMap.set(userId, activeTimestamps);
-  return false;
+    // Filter active timestamps within the 1-minute window
+    const activeTimestamps = timestamps.filter(
+      (ts: number) => now - ts < RATE_LIMIT_WINDOW_MS,
+    );
+
+    if (activeTimestamps.length >= MAX_AI_FLOWS_PER_MINUTE) {
+      return true; // Rate limited
+    }
+
+    // Record current timestamp
+    activeTimestamps.push(now);
+
+    if (snap.exists) {
+      transaction.update(privateRef, { aiRequestTimestamps: activeTimestamps });
+    } else {
+      transaction.set(privateRef, {
+        id: userId,
+        aiRequestTimestamps: activeTimestamps,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+    }
+
+    return false; // Not rate limited
+  });
 }
 
 /**
@@ -59,7 +80,8 @@ export async function executeAiFlow(
   const userId = claims.uid;
 
   // 1. Rate Limiting Check
-  if (isRateLimited(userId)) {
+  const rateLimited = await checkRateLimitFirestore(userId);
+  if (rateLimited) {
     throw new Error(
       "Rate limit exceeded. You can only execute 5 AI flows per minute.",
     );
