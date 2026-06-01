@@ -1,0 +1,15 @@
+headers:
+  - glob: "**/*"
+    headers:
+      - key: X-Frame-Options
+        value: DENY
+      - key: X-Content-Type-Options
+        value: nosniff
+
+env:
+  - variable: NEXT_PUBLIC_APP_NAME
+    value: "FireSaaS"
+  - variable: NEXT_PUBLIC_APP_URL
+    value: "https://your-domain.web.app"
+  - variable: AI_TEXT_MODEL
+    value: "gemini-3.5-flash"

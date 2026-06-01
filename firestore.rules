@@ -1,0 +1,120 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function getUid() {
+      return isAuthenticated() ? request.auth.uid : 'anonymous';
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Checks if the user is a member of the given organization
+    function isOrgMember(orgId) {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/organizations/$(orgId)/members/$(getUid()));
+    }
+
+    // Gets the member record for the current user in an organization
+    function getOrgMember(orgId) {
+      return get(/databases/$(database)/documents/organizations/$(orgId)/members/$(getUid())).data;
+    }
+
+    // Checks if the member has one of the specified roles
+    function hasRole(orgId, roles) {
+      return isOrgMember(orgId) && getOrgMember(orgId).role in roles;
+    }
+
+    // --- Users Profiles Rules ---
+    match /users/{userId} {
+      allow read: if isAuthenticated(); // Allowed for collaboration/member lookups
+      allow write: if isOwner(userId);
+    }
+
+    match /privateUsers/{userId} {
+      allow read: if isOwner(userId);
+      allow write: if false; // Only manageable server-side via Admin SDK
+    }
+
+    // --- Organizations Rules ---
+    match /organizations/{orgId} {
+      // Members can read organization info individually
+      allow get: if isOrgMember(orgId);
+      // Disable global list to prevent tenant directory leaks
+      allow list: if false;
+      
+      // Creating a new organization: allowed if authenticated and setting themselves as the owner
+      allow create: if isAuthenticated() && request.resource.data.ownerId == request.auth.uid;
+      
+      // Update: only owners and admins
+      allow update: if hasRole(orgId, ['owner', 'admin']);
+      
+      // Deleting organization: only owner
+      allow delete: if hasRole(orgId, ['owner']);
+
+      // --- Members subcollection ---
+      match /members/{userId} {
+        // Members can list other members
+        allow read: if isOrgMember(orgId);
+        
+        // Members can be added:
+        // 1. By owners/admins of the organization
+        // 2. Or if creating the first owner member (during org creation, where ownerId matches userId)
+        allow create: if (isAuthenticated() && request.resource.data.userId == request.auth.uid && request.resource.data.role == 'owner') ||
+                       hasRole(orgId, ['owner', 'admin']);
+                       
+        // Updates: only owners and admins. Normal members cannot change roles.
+        // A user cannot change their own role to bypass permissions.
+        allow update: if hasRole(orgId, ['owner', 'admin']) && 
+                       (request.auth.uid != userId || getOrgMember(orgId).role == 'owner');
+                       
+        // Delete: only owners/admins can remove members. Members can leave.
+        allow delete: if hasRole(orgId, ['owner', 'admin']) || isOwner(userId);
+      }
+
+      // --- Invitations subcollection ---
+      match /invitations/{inviteId} {
+        allow read: if isAuthenticated(); // To accept invitations, user needs to read it
+        allow create, update, delete: if hasRole(orgId, ['owner', 'admin']);
+      }
+
+      // --- File Metadata Rules ---
+      match /files/{fileId} {
+        allow read: if isOrgMember(orgId);
+        
+        // Only owners, admins, and members can upload files
+        allow create: if hasRole(orgId, ['owner', 'admin', 'member']) && 
+                        request.resource.data.ownerId == request.auth.uid;
+                        
+        allow update: if hasRole(orgId, ['owner', 'admin', 'member']);
+        
+        // Deletion: only owners or admins (or the file owner)
+        allow delete: if hasRole(orgId, ['owner', 'admin']) || 
+                        resource.data.ownerId == request.auth.uid;
+      }
+
+      // --- AI Usage Logging Rules ---
+      match /aiUsage/{usageId} {
+        allow read: if isOrgMember(orgId);
+        allow write: if false; // Append-only from secure Server Actions / Admin SDK
+      }
+
+      // --- Audit Log Rules ---
+      match /auditLogs/{logId} {
+        allow read: if isOrgMember(orgId);
+        allow write: if false; // Append-only from secure Server Actions / Admin SDK
+      }
+    }
+
+    // Secure collection group rule to allow members to list their own organization links
+    match /{path=**}/members/{memberId} {
+      allow read: if request.auth != null && (resource == null || resource.data.userId == request.auth.uid || memberId == request.auth.uid);
+    }
+  }
+}

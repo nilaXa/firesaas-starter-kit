@@ -1,0 +1,39 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function getUid() {
+      return isAuthenticated() ? request.auth.uid : 'anonymous';
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isOrgMember(orgId) {
+      return isAuthenticated() && 
+        firestore.exists(/databases/(default)/documents/organizations/$(orgId)/members/$(getUid()));
+    }
+
+    // --- User Avatars ---
+    match /users/{userId}/avatars/{fileName} {
+      allow read: if isAuthenticated();
+      // Owner can upload images up to 5MB
+      allow write: if isOwner(userId)
+                    && request.resource.size < 5 * 1024 * 1024 
+                    && request.resource.contentType.matches('image/.*');
+    }
+
+    // --- Organization / Workspace Files ---
+    match /organizations/{orgId}/files/{fileId}/{fileName} {
+      // Organization members can read and write files
+      allow read: if isOrgMember(orgId);
+      allow write: if isOrgMember(orgId)
+                    && request.resource.size < 20 * 1024 * 1024; // 20MB limit
+    }
+  }
+}
