@@ -49,8 +49,8 @@ service cloud.firestore {
       // Disable global list to prevent tenant directory leaks
       allow list: if false;
       
-      // Creating a new organization: allowed if authenticated and setting themselves as the owner
-      allow create: if isAuthenticated() && request.resource.data.ownerId == request.auth.uid;
+      // Creating a new organization: only allowed server-side via Admin SDK
+      allow create: if false;
       
       // Update: only owners and admins
       allow update: if hasRole(orgId, ['owner', 'admin']);
