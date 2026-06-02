@@ -160,4 +160,16 @@ describe("Firestore Security Rules Tests", () => {
       }),
     );
   });
+
+  it("prevents authenticated clients from creating organizations directly", async () => {
+    const aliceDb = testEnv.authenticatedContext("alice").firestore();
+    const orgRef = doc(aliceDb, "organizations/new-org");
+
+    await assertFails(
+      setDoc(orgRef, {
+        name: "New Org",
+        ownerId: "alice",
+      }),
+    );
+  });
 });

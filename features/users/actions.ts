@@ -3,6 +3,7 @@
 import { adminDb } from "@/firebase/admin";
 import { FirestorePaths } from "@/firebase/firestore";
 import { requireAuth } from "@/features/auth/server";
+import { z } from "zod";
 import { syncProfileInputSchema } from "./schema";
 
 /**
@@ -10,16 +11,28 @@ import { syncProfileInputSchema } from "./schema";
  * Prevents overwriting existing profiles.
  */
 export async function syncUserProfile(payload: {
-  uid: string;
-  email: string;
+  uid?: string;
+  email?: string;
   displayName?: string | null;
   photoURL?: string | null;
 }) {
   const claims = await requireAuth();
-  if (claims.uid !== payload.uid) {
-    throw new Error("Unauthorized. Cannot sync profile for another user.");
-  }
-  const { uid, email, displayName = null, photoURL = null } = payload;
+
+  // Zod-validate optional profile fields
+  const validated = z
+    .object({
+      displayName: z.string().nullable().optional(),
+      photoURL: z.string().url().or(z.literal("")).nullable().optional(),
+    })
+    .parse({
+      displayName: payload?.displayName,
+      photoURL: payload?.photoURL,
+    });
+
+  const uid = claims.uid;
+  const email = claims.email || "";
+  const displayName = validated.displayName ?? null;
+  const photoURL = validated.photoURL ?? null;
 
   const userRef = adminDb.doc(FirestorePaths.user(uid));
   const userSnap = await userRef.get();

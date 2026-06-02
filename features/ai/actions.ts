@@ -79,19 +79,19 @@ export async function executeAiFlow(
   const claims = await requireAuth();
   const userId = claims.uid;
 
-  // 1. Rate Limiting Check
-  const rateLimited = await checkRateLimitFirestore(userId);
-  if (rateLimited) {
-    throw new Error(
-      "Rate limit exceeded. You can only execute 5 AI flows per minute.",
-    );
-  }
-
   // 1. Authorization check
   const role = await getMemberRole(orgId, userId);
   if (!role || !canRunAiFlows(role as UserRole)) {
     throw new Error(
       "Unauthorized. User must be a member of the active workspace with permissions to run AI flows.",
+    );
+  }
+
+  // 2. Rate Limiting Check
+  const rateLimited = await checkRateLimitFirestore(userId);
+  if (rateLimited) {
+    throw new Error(
+      "Rate limit exceeded. You can only execute 5 AI flows per minute.",
     );
   }
 
