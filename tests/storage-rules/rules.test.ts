@@ -98,4 +98,42 @@ describe("Firebase Storage Security Rules Tests", () => {
     // Bob is not a member, he should be blocked
     await assertFails(uploadBytes(bobFileRef, dummyBlob));
   });
+
+  it("allows organization owners, admins, and members to upload files, but blocks viewers", async () => {
+    const orgId = "acme-corp";
+
+    // Seed Firestore organization memberships
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      const db = context.firestore();
+      await setDoc(doc(db, `organizations/${orgId}`), { name: "Acme Corp" });
+      await setDoc(doc(db, `organizations/${orgId}/members/alice`), {
+        userId: "alice",
+        role: "owner",
+      });
+      await setDoc(doc(db, `organizations/${orgId}/members/charlie`), {
+        userId: "charlie",
+        role: "viewer",
+      });
+    });
+
+    const aliceStorage = testEnv.authenticatedContext("alice").storage();
+    const charlieStorage = testEnv.authenticatedContext("charlie").storage();
+
+    const aliceFileRef = ref(
+      aliceStorage,
+      `organizations/${orgId}/files/file1/doc.pdf`,
+    );
+    const charlieFileRef = ref(
+      charlieStorage,
+      `organizations/${orgId}/files/file2/doc.pdf`,
+    );
+
+    const dummyBlob = new Blob(["dummy-doc-data"], { type: "application/pdf" });
+
+    // Alice is owner, she can upload
+    await assertSucceeds(uploadBytes(aliceFileRef, dummyBlob));
+
+    // Charlie is viewer, he should be blocked
+    await assertFails(uploadBytes(charlieFileRef, dummyBlob));
+  });
 });

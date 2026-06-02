@@ -23,7 +23,7 @@ describe("Firestore Security Rules Tests", () => {
   beforeAll(async () => {
     // Initialize test environment pointing to the running emulator (port 8080)
     testEnv = await initializeTestEnvironment({
-      projectId: "demo-fire-saas",
+      projectId: "demo-firestore-rules",
       firestore: {
         rules: fs.readFileSync("firestore.rules", "utf8"),
         host: "127.0.0.1",
@@ -131,5 +131,33 @@ describe("Firestore Security Rules Tests", () => {
       where("userId", "==", "bob"),
     );
     await assertSucceeds(getDocs(membersGroup));
+  });
+
+  it("prevents an authenticated user from adding themselves as a member of an existing organization directly", async () => {
+    const orgId = "acme-corp";
+
+    // Seed organization bypassing rules
+    await testEnv.withSecurityRulesDisabled(async (context) => {
+      const db = context.firestore();
+      await setDoc(doc(db, `organizations/${orgId}`), {
+        name: "Acme Corp",
+        ownerId: "alice",
+      });
+      await setDoc(doc(db, `organizations/${orgId}/members/alice`), {
+        userId: "alice",
+        role: "owner",
+      });
+    });
+
+    const bobDb = testEnv.authenticatedContext("bob").firestore();
+
+    // Bob tries to add himself as owner of Acme Corp directly (should fail)
+    const bobMemberRef = doc(bobDb, `organizations/${orgId}/members/bob`);
+    await assertFails(
+      setDoc(bobMemberRef, {
+        userId: "bob",
+        role: "owner",
+      }),
+    );
   });
 });

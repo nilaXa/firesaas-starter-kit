@@ -57,6 +57,14 @@ export default function SignUpPage() {
         displayName: values.name,
       });
 
+      // Sync session cookie to server explicitly first to allow syncUserProfile requireAuth to pass
+      const token = await userCredential.user.getIdToken();
+      await fetch("/api/auth/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      });
+
       // 3. Sync to Firestore public & private profiles
       await syncUserProfile({
         uid: userCredential.user.uid,
@@ -84,6 +92,14 @@ export default function SignUpPage() {
 
       const currentUser = auth.currentUser;
       if (currentUser) {
+        // Sync session cookie to server explicitly first
+        const token = await currentUser.getIdToken();
+        await fetch("/api/auth/session", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token }),
+        });
+
         await syncUserProfile({
           uid: currentUser.uid,
           email: currentUser.email!,

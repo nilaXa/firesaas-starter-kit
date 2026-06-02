@@ -19,6 +19,10 @@ service firebase.storage {
         firestore.exists(/databases/(default)/documents/organizations/$(orgId)/members/$(getUid()));
     }
 
+    function getOrgMemberRole(orgId) {
+      return firestore.get(/databases/(default)/documents/organizations/$(orgId)/members/$(getUid())).data.role;
+    }
+
     // --- User Avatars ---
     match /users/{userId}/avatars/{fileName} {
       allow read: if isAuthenticated();
@@ -30,10 +34,17 @@ service firebase.storage {
 
     // --- Organization / Workspace Files ---
     match /organizations/{orgId}/files/{fileId}/{fileName} {
-      // Organization members can read and write files
+      // Organization members can read files
       allow read: if isOrgMember(orgId);
-      allow write: if isOrgMember(orgId)
+      
+      // Upload (create/update): only owners, admins, and members (no viewers)
+      allow create, update: if isOrgMember(orgId)
+                    && getOrgMemberRole(orgId) in ['owner', 'admin', 'member']
                     && request.resource.size < 20 * 1024 * 1024; // 20MB limit
+                    
+      // Delete: only owners and admins
+      allow delete: if isOrgMember(orgId)
+                    && getOrgMemberRole(orgId) in ['owner', 'admin'];
     }
   }
 }

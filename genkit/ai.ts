@@ -1,5 +1,5 @@
 import { genkit } from "genkit";
-import { googleAI } from "@genkit-ai/googleai";
+import { googleAI } from "@genkit-ai/google-genai";
 
 // Initialize Genkit with Google AI plugin
 // GOOGLE_GENAI_API_KEY will be automatically picked up from process.env

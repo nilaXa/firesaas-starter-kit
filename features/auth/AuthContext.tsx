@@ -7,7 +7,7 @@ import {
   sendPasswordResetEmail,
   signInWithPopup,
   GoogleAuthProvider,
-  onAuthStateChanged,
+  onIdTokenChanged,
 } from "firebase/auth";
 import { auth } from "@/firebase/client";
 
@@ -54,7 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+    const unsubscribe = onIdTokenChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
       await syncSession(firebaseUser);
       setLoading(false);
